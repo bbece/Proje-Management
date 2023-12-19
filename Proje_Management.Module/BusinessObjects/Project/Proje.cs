@@ -1,18 +1,36 @@
-﻿using DevExpress.Data.Filtering;
+﻿using DevExpress.CodeParser;
 using DevExpress.ExpressApp;
-using DevExpress.ExpressApp.DC;
-using DevExpress.ExpressApp.Model;
+using DevExpress.ExpressApp.ConditionalAppearance;
 using DevExpress.Persistent.Base;
-using DevExpress.Persistent.BaseImpl;
 using DevExpress.Persistent.Validation;
 using DevExpress.Xpo;
 using Proje_Management.Module.BusinessObjects.projectDocuments;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using static DevExpress.Data.Mask.Internal.MaskSettings<T>;
+using System.Net.WebSockets;
+using static System.Net.Mime.MediaTypeNames;
+
+public enum ProjectStatus
+{
+    [ImageName("State_Validation")]
+    OnayBekliyor,
+    [ImageName("State_Task_Executing")]
+    DevamEdiyor,
+    [ImageName("State_Task_Completed")]
+    Tamamlandi,
+    // Diğer durumlar buraya eklenebilir
+}
+
+// Parasal Getiri Tipi Enum
+public enum FinancialReturnType
+{
+    Gunluk,
+    Aylik,
+    Yillik
+}
+
+public enum ProjectType
+{
+    Yurtdışı, Tübitak, Kobi
+}
 
 namespace Proje_Management.Module.BusinessObjects.Project
 {
@@ -21,8 +39,11 @@ namespace Proje_Management.Module.BusinessObjects.Project
     //[DefaultProperty("DisplayMemberNameForLookupEditorsOfThisType")]
     //[DefaultListViewOptions(MasterDetailMode.ListViewOnly, false, NewItemRowPosition.None)]
     [Persistent("DatabaseTableProjects")]
+    [Appearance("RedProjectObject", AppearanceItemType = "ViewItem", TargetItems = "*", Criteria = "projectEndDate <  LocalDateTimeToday() AND ProjectStatus != 'Tamamlandi'", Context = "ListView", BackColor = "Red")]
+    [Appearance("GreenProjectObject", AppearanceItemType = "ViewItem", TargetItems = "*", Criteria = "ProjectStatus == 'Tamamlandi'", Context = "ListView", BackColor = "Green")]
+    [Appearance("OrangeProjectObject", AppearanceItemType = "ViewItem", TargetItems = "*", Criteria = " projectEndDate >  LocalDateTimeToday() AND ProjectStatus == 'DevamEdiyor'", Context = "ListView", BackColor = "Orange")]
     // Specify more UI options using a declarative approach (https://documentation.devexpress.com/#eXpressAppFramework/CustomDocument112701).
-    public class Proje : XPBaseObject
+    public class Proje : XPObject
     { 
         public Proje(Session session)
             : base(session)
@@ -52,11 +73,23 @@ namespace Proje_Management.Module.BusinessObjects.Project
             set => SetPropertyValue(nameof(ProjeName), ref projeName, value);
         }
 
-        [Association("Project-ProjectManager")]
-        public Employee.Employer ProjectManager
+        private string projectNumber;
+        [Size(10)] // Maksimum 10 karakter
+        [RuleRegularExpression(DefaultContexts.Save, @"^\d{1,10}$", CustomMessageTemplate = "Lütfen sadece rakam girin")]
+        public string ProjectNumber
         {
-            get => GetPropertyValue<Employee.Employer>(nameof(ProjectManager));
-            set => SetPropertyValue(nameof(ProjectManager), value);
+            get => projectNumber;
+            set => SetPropertyValue(nameof(ProjectNumber), ref projectNumber, "PRJ" + value);
+        }
+
+
+        private ProjectManager.ProjectManager yonetici;
+
+        [Association("Project-ProjectManager")]
+        public ProjectManager.ProjectManager ProjectManager
+        {
+            get => yonetici;
+            set => SetPropertyValue(nameof(ProjectManager), ref yonetici, value);
         }
 
         [Size(SizeAttribute.DefaultStringMappingFieldSize)]
@@ -66,14 +99,14 @@ namespace Proje_Management.Module.BusinessObjects.Project
             set => SetPropertyValue(nameof(Aim), ref aim, value);
         }
 
-        [Size(SizeAttribute.DefaultStringMappingFieldSize)]
+        [Size(15)]
         public string ProblemContext
         {
             get => problemContext;
             set => SetPropertyValue(nameof(ProblemContext), ref problemContext, value);
         }
         
-        [Size(SizeAttribute.DefaultStringMappingFieldSize)]
+        [Size(15)]
         public string Scope
         {
             get => scope;
@@ -87,29 +120,31 @@ namespace Proje_Management.Module.BusinessObjects.Project
         public System.DateTime ProjectStartDate
         {
             get => projectStartDate;
-            set
-            {
-                if (value < System.DateTime.Today)
-                {
-                    throw new ArgumentException("Proje başlangıç tarihi minimum değerden küçük olamaz.");
-                }
+            set =>
+            
                 SetPropertyValue(nameof(ProjectStartDate), ref projectStartDate, value);
-            }
+            
         }
 
-       
+       public DateTime ProjectEndDate { get => projectEndDate;
+            set {
+                if(value <= projectStartDate)
+                {
+                    throw new ArgumentException("Proje bitiş tarihi minimum değerden küçük olamaz.");
+                }
+                SetPropertyValue(nameof(ProjectEndDate), ref projectEndDate, value);
+            }
+            
+        }
 
         public System.DateTime EstimatedStartDate
         {
             get => estimatedStartDate;
-            set 
-            {
-                if (value < System.DateTime.Today)
-                {
-                    throw new ArgumentException("Proje başlangıç tarihi minimum değerden küçük olamaz.");
-                }
-                SetPropertyValue(nameof(EstimatedStartDate), ref estimatedStartDate, value);
-            } 
+            set => SetPropertyValue(nameof(EstimatedStartDate), ref estimatedStartDate, value);
+
+
+
+
         }
         public System.DateTime EstimatedEndDate
         {
@@ -122,9 +157,42 @@ namespace Proje_Management.Module.BusinessObjects.Project
             get => GetPropertyValue<ProjectTeam>(nameof(TeamProject));
             set => SetPropertyValue(nameof(TeamProject), value);
         }
-        [Association("ProjectDocs-Proje")]
-        public XPCollection<ProjectDocuments> projectDocuments => GetCollection<ProjectDocuments>(nameof(projectDocuments));
+        
+        private decimal financialReturn;
+        public decimal FinancialReturn
+        {
+            get => financialReturn;
+            set => SetPropertyValue(nameof(FinancialReturn), ref financialReturn, value);
+        }
+
+        // Parasal Getiri Tipi
+        private FinancialReturnType financialReturnType;
+        public FinancialReturnType FinancialReturnType
+        {
+            get => financialReturnType;
+            set => SetPropertyValue(nameof(FinancialReturnType), ref financialReturnType, value);
+        }
+        private ProjectStatus projectStatus;
+        public ProjectStatus ProjectStatus
+        {
+            get => projectStatus;
+            set => SetPropertyValue(nameof(ProjectStatus), ref projectStatus, value);
+        }
+       
+        private ProjectType projectType;
+
+        public ProjectType ProjectType
+        {
+            get => projectType;
+            set => SetPropertyValue(nameof(ProjectType), ref projectType, value);
+        }
+
+
+
     }
+
+
 }
+
 
 

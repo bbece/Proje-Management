@@ -6,6 +6,7 @@ using DevExpress.Persistent.Base;
 using DevExpress.Persistent.BaseImpl;
 using DevExpress.Persistent.Validation;
 using DevExpress.Xpo;
+using DevExpress.XtraSpreadsheet.Model;
 using Proje_Management.Module.BusinessObjects.Project;
 using System;
 using System.Collections.Generic;
@@ -17,7 +18,7 @@ namespace Proje_Management.Module.BusinessObjects.Employee
 {
     [DefaultClassOptions]
     //[ImageName("BO_Contact")]
-    //[DefaultProperty("DisplayMemberNameForLookupEditorsOfThisType")]
+    [DefaultProperty("EmployerFullName")]
     //[DefaultListViewOptions(MasterDetailMode.ListViewOnly, false, NewItemRowPosition.None)]
     [Persistent("DatabaseTableEmployers")]
     // Specify more UI options using a declarative approach (https://documentation.devexpress.com/#eXpressAppFramework/CustomDocument112701).
@@ -35,14 +36,22 @@ namespace Proje_Management.Module.BusinessObjects.Employee
 
         string employerFullName;
 
+        
         [Size(SizeAttribute.DefaultStringMappingFieldSize)]
+        [RuleRequiredField(DefaultContexts.Save, CustomMessageTemplate = "Lütfen doldurun")]
+        [RuleRegularExpression(DefaultContexts.Save, @"^[a-zA-Z\s]*$", CustomMessageTemplate = "Lütfen sadece harf girin")]
         public string EmployerFullName
         {
             get => employerFullName;
-            set => SetPropertyValue(nameof(EmployerFullName), ref employerFullName, value);
+            set
+            {
+                
+                
+                    SetPropertyValue(nameof(EmployerFullName), ref employerFullName, value);
+                
+            }
         }
-        [Association("Project-ProjectManager")]
-        public XPCollection<Proje> ManagedProjects => GetCollection<Proje>(nameof(ManagedProjects));
+
         [Association("Employer-Team")]
         public ProjectTeam EmployerTeam
         {

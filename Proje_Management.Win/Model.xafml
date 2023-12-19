@@ -1,4 +1,60 @@
-﻿<Application Logo="ExpressAppLogo">
-	<Options UIType="TabbedMDI" FormStyle="Ribbon" />
-	<NavigationItems NavigationStyle="Accordion" DefaultChildItemsDisplayStyle="List"/>
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Application Logo="ExpressAppLogo">
+  <NavigationItems NavigationStyle="TreeList" DefaultChildItemsDisplayStyle="List">
+    <Items>
+      <Item Id="@54108ed7-2e3e-42ba-bfab-fce9e1e472bd" Caption="Kullanıcı Paneli" IsNewNode="True">
+        <Items IsNewNode="True">
+          <Item Id="ApplicationUser_ListView" ViewId="ApplicationUser_ListView" ObjectKey="" IsNewNode="True" />
+          <Item Id="Event_ListView" ViewId="Event_ListView" ObjectKey="" IsNewNode="True" />
+          <Item Id="MyDetails" ViewId="ApplicationUser_DetailView" ObjectKey="@CurrentUserID" Caption="My Details" ImageName="BO_MyDetails" IsNewNode="True" />
+          <Item Id="PermissionPolicyRole_ListView" ViewId="PermissionPolicyRole_ListView" ObjectKey="" IsNewNode="True" />
+        </Items>
+      </Item>
+      <Item Id="Default" Caption="Projects" ToolTipIconType="Information" QuickAccessItem="True" ImageName="BO_Document">
+        <Items>
+          <Item Id="ApplicationUser_ListView" Removed="True" />
+          <Item Id="Dugum_ListView" Visible="False" />
+          <Item Id="Employer_ListView" Visible="True" ImageName="BO_Customer" />
+          <Item Id="Event_ListView" Removed="True" />
+          <Item Id="MileStone_ListView" ImageName="ChartType_SideBySideRangeBar" />
+          <Item Id="MyDetails" Removed="True" />
+          <Item Id="PermissionPolicyRole_ListView" Removed="True" />
+          <Item Id="Proje_ListView" ImageName="PasteSpecial" />
+          <Item Id="ProjectDocuments_ListView" ImageName="BO_FileAttachment" />
+          <Item Id="ProjectManager_ListView" ImageName="BO_Person" />
+          <Item Id="ProjectTeam_ListView" ImageName="BO_Department" />
+          <Item Id="Tasks_ListView" ImageName="BO_Note" />
+        </Items>
+      </Item>
+      <Item Id="Reports" Visible="False" />
+    </Items>
+  </NavigationItems>
+  <Options UIType="TabbedMDI" FormStyle="Ribbon" />
+  <SchemaModules>
+    <SchemaModule Name="CloneObjectModule" Version="23.1.6.0" IsNewNode="True" />
+    <SchemaModule Name="SchedulerModuleBase" Version="23.1.6.0" IsNewNode="True" />
+    <SchemaModule Name="SchedulerWindowsFormsModule" Version="23.1.6.0" IsNewNode="True" />
+    <SchemaModule Name="SystemModule" Version="23.1.6.0" IsNewNode="True" />
+    <SchemaModule Name="SystemWindowsFormsModule" Version="23.1.6.0" IsNewNode="True" />
+  </SchemaModules>
+  <Views>
+    <ListView Id="Employer_ListView" AllowEdit="True">
+      <Columns>
+        <ColumnInfo Id="Oid" Index="-1" />
+        <ColumnInfo Id="EmployerFullName" Width="173" SortIndex="-1" SortOrder="None" />
+        <ColumnInfo Id="EmployerTeam" Width="128" />
+      </Columns>
+      <SplitLayout ViewsOrder="ListViewDetailView" />
+    </ListView>
+    <ListView Id="MileStone_ListView" AllowEdit="True" MasterDetailMode="ListViewAndDetailView" />
+    <ListView Id="Proje_ListView" AllowEdit="True" />
+    <ListView Id="Proje_LookupListView" AllowEdit="True" />
+    <ListView Id="ProjectManager_ManagedProjects_ListView" AllowEdit="True" />
+    <ListView Id="ProjectTeam_TeamProjects_ListView" AllowEdit="True" />
+    <ListView Id="Tasks_ListView" AllowEdit="True">
+      <Columns>
+        <ColumnInfo Id="Task" Width="54" />
+      </Columns>
+    </ListView>
+  </Views>
 </Application>

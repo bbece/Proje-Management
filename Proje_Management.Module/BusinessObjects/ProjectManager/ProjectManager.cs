@@ -35,6 +35,9 @@ namespace Proje_Management.Module.BusinessObjects.ProjectManager
             base.AfterConstruction();
             // Place your initialization code here (https://documentation.devexpress.com/eXpressAppFramework/CustomDocument112834.aspx).
         }
-      
+
+
+        [Association("Project-ProjectManager")]
+        public XPCollection<Proje> ManagedProjects => GetCollection<Proje>(nameof(ManagedProjects));
     }
 }

@@ -50,4 +50,9 @@
   <ItemGroup>
     <ProjectReference Include="..\Proje_Management.Module\Proje_Management.Module.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <None Update="UnusableNodes.xml">
+      <DependentUpon>Model.xafml</DependentUpon>
+    </None>
+  </ItemGroup>
 </Project>

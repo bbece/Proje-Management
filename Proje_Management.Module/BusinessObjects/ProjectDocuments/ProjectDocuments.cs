@@ -14,24 +14,6 @@ using System.Linq;
 using System.Text;
 
 
-public enum ProjectStatus
-{
-    [ImageName("State_Validation")]
-    OnayBekliyor,
-    [ImageName("State_Task_Executing")]
-    DevamEdiyor,
-    [ImageName("State_Task_Completed")]
-    Tamamlandi,
-    // Diğer durumlar buraya eklenebilir
-}
-
-// Parasal Getiri Tipi Enum
-public enum FinancialReturnType
-{
-    Gunluk,
-    Aylik,
-    Yillik
-}
 
 namespace Proje_Management.Module.BusinessObjects.projectDocuments
 {
@@ -40,6 +22,7 @@ namespace Proje_Management.Module.BusinessObjects.projectDocuments
     //[DefaultProperty("DisplayMemberNameForLookupEditorsOfThisType")]
     //[DefaultListViewOptions(MasterDetailMode.ListViewOnly, false, NewItemRowPosition.None)]
     [Persistent("DatabaseTableProjectDocs")]
+    [FileAttachmentAttribute(nameof(File))]
     // Specify more UI options using a declarative approach (https://documentation.devexpress.com/#eXpressAppFramework/CustomDocument112701).
     public class ProjectDocuments : FileData
     { // Inherit from a different class to provide a custom primary key, concurrency and deletion behavior, etc. (https://documentation.devexpress.com/eXpressAppFramework/CustomDocument113146.aspx).
@@ -54,25 +37,21 @@ namespace Proje_Management.Module.BusinessObjects.projectDocuments
             base.AfterConstruction();
             // Place your initialization code here (https://documentation.devexpress.com/eXpressAppFramework/CustomDocument112834.aspx).
         }
-        [Association("ProjectDocs-Proje")]
-        public Proje Project
+        private FileData file;
+        [DevExpress.Xpo.Aggregated, ExpandObjectMembers(ExpandObjectMembers.Never)]
+        public FileData File
         {
-            get => GetPropertyValue<Proje>(nameof(Project));
-            set => SetPropertyValue(nameof(Project), value);
+            get => file;
+            set => SetPropertyValue(nameof(File), ref file, value);
         }
-        private decimal financialReturn;
-        public decimal FinancialReturn
-        {
-            get => financialReturn;
-            set => SetPropertyValue(nameof(FinancialReturn), ref financialReturn, value);
-        }
+        private String fileName;
+        
+        public string FileName
 
-        // Parasal Getiri Tipi
-        private FinancialReturnType financialReturnType;
-        public FinancialReturnType FinancialReturnType
         {
-            get => financialReturnType;
-            set => SetPropertyValue(nameof(FinancialReturnType), ref financialReturnType, value);
+      
+            get => fileName ;
+            set => SetPropertyValue(nameof(FileName), ref fileName, file.FileName);
         }
 
     }

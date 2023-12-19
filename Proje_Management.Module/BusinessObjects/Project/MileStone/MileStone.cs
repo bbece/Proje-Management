@@ -3,6 +3,7 @@ using DevExpress.ExpressApp;
 using DevExpress.ExpressApp.DC;
 using DevExpress.ExpressApp.Model;
 using DevExpress.Persistent.Base;
+using DevExpress.Persistent.Base.General;
 using DevExpress.Persistent.BaseImpl;
 using DevExpress.Persistent.Validation;
 using DevExpress.Xpo;
@@ -12,40 +13,55 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 
-namespace Proje_Management.Module.BusinessObjects.Project.Tasks
+namespace Proje_Management.Module.BusinessObjects.Project.MileStone
 {
     [DefaultClassOptions]
+    [DeferredDeletion(false)]
     //[ImageName("BO_Contact")]
     //[DefaultProperty("DisplayMemberNameForLookupEditorsOfThisType")]
     //[DefaultListViewOptions(MasterDetailMode.ListViewOnly, false, NewItemRowPosition.None)]
-    //[Persistent("DatabaseTableName")]
+    [Persistent("DatabaseTableMileStones")]
     // Specify more UI options using a declarative approach (https://documentation.devexpress.com/#eXpressAppFramework/CustomDocument112701).
-    public class Tasks : BaseObject
+    public class MileStone : Dugum
     { // Inherit from a different class to provide a custom primary key, concurrency and deletion behavior, etc. (https://documentation.devexpress.com/eXpressAppFramework/CustomDocument113146.aspx).
         // Use CodeRush to create XPO classes and properties with a few keystrokes.
         // https://docs.devexpress.com/CodeRushForRoslyn/118557
-        public Tasks(Session session)
-            : base(session)
-        {
-        }
+        
         public override void AfterConstruction()
         {
             base.AfterConstruction();
             // Place your initialization code here (https://documentation.devexpress.com/eXpressAppFramework/CustomDocument112834.aspx).
         }
-        //private string _PersistentProperty;
-        //[XafDisplayName("My display name"), ToolTip("My hint message")]
-        //[ModelDefault("EditMask", "(000)-00"), Index(0), VisibleInListView(false)]
-        //[Persistent("DatabaseColumnName"), RuleRequiredField(DefaultContexts.Save)]
-        //public string PersistentProperty {
-        //    get { return _PersistentProperty; }
-        //    set { SetPropertyValue(nameof(PersistentProperty), ref _PersistentProperty, value); }
-        //}
+     
+        protected override ITreeNode Parent
+        {
+            get
+            {
+                return null;
+            }
+        }
+        protected override IBindingList Children
+        {
+            get
+            {
+                return Tasks;
+            }
+        }
+        public MileStone(Session session) : base(session) { }
+        public MileStone(Session session, string name)
+            : base(session)
+        {
+            this.Name = name;
+        }
+        
 
-        //[Action(Caption = "My UI Action", ConfirmationMessage = "Are you sure?", ImageName = "Attention", AutoCommit = true)]
-        //public void ActionMethod() {
-        //    // Trigger a custom business logic for the current record in the UI (https://documentation.devexpress.com/eXpressAppFramework/CustomDocument112619.aspx).
-        //    this.PersistentProperty = "Paid";
-        //}
+        [Association("ProjectGroup-Projects"), DevExpress.Xpo.Aggregated]
+        public XPCollection<Tasks.Tasks> Tasks
+        {
+            get
+            {
+                return GetCollection<Tasks.Tasks>("Tasks");
+            }
+        }
     }
 }
